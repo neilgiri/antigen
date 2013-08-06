@@ -1,6 +1,3 @@
-Epidemic: Large-scale individual-based simulation of pathogen epidemiology and genealogy
-========================================================================================
-
 *This project is forked from [antigen](https://github.com/trvrb/antigen). Here, I wanted a simple
 SIRS model, so I stripped out all the stuff about virus phenotypes. This should run significantly
 faster than Antigen.*
