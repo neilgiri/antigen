@@ -2,7 +2,7 @@
 SIRS model, so I stripped out all the stuff about virus phenotypes. This should run significantly
 faster than Antigen.*
 
-Epidemic implements an SIRS epidemiological model, where hosts make contacts trasmitting infection
+**Epidemic** implements an SIRS epidemiological model, where hosts make contacts trasmitting infection
 and also recover from infection.  During the simulation, the genealogy of infection is tracked.
 
 Population structure is implemented in terms of discrete demes.  Contacts within a deme occur
