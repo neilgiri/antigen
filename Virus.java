@@ -6,7 +6,6 @@ public class Virus {
 
 	// simulation fields
 	private Virus parent;
-	private Phenotype phenotype;
 	private double birth;		// measured in years relative to burnin
 	private int deme;
 	
@@ -19,38 +18,23 @@ public class Virus {
 	
 	// initialization
 	public Virus() {
-		phenotype = PhenotypeFactory.makeVirusPhenotype();
+	
 	}
 		
 	// replication, copies the virus, but remembers the ancestry
 	public Virus(Virus v, int d) {
 		parent = v;
-		phenotype = v.getPhenotype();
 		birth = Parameters.getDate();
 		deme = d;
 	}
-	
-	public Virus(Virus v, int d, Phenotype p) {
-		parent = v;
-		phenotype = p;
-		birth = Parameters.getDate();
-		deme = d;
-	}	
-	
-	public Virus(int d, Phenotype p) {
+		
+	public Virus(int d) {
 		parent = null;
-		phenotype = p;
 		birth = Parameters.getDate();
 		deme = d;
 	}		
 	
 	// methods
-	public Phenotype getPhenotype() {
-		return phenotype;
-	}
-	public void setPhenotype(Phenotype p) {
-		phenotype = p;
-	}	
 	public double getBirth() {
 		return birth;
 	}
@@ -103,16 +87,7 @@ public class Virus {
 	public boolean isTip() {
 		return getNumberOfChildren() == 0 ? true : false;
 	}
-	
-	// returns a mutated copy, original virus left intact
-	public Virus mutate() {
-	
-		Phenotype mutP = phenotype.mutate();			// mutated copy
-		Virus mutV = new Virus(this,deme,mutP);
-		return mutV;
 		
-	}
-	
 	public Virus commonAncestor(Virus virusB) {
 				
 		Virus lineageA = this;

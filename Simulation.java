@@ -16,14 +16,8 @@ public class Simulation {
 	// constructor
 	public Simulation() {
 		for (int i = 0; i < Parameters.demeCount; i++) {
-			if (Parameters.restartFromCheckpoint) {
-				HostPopulation hp = new HostPopulation(i, true);
-				demes.add(hp);
-			}
-			else {
-				HostPopulation hp = new HostPopulation(i);
-				demes.add(hp);
-			}
+			HostPopulation hp = new HostPopulation(i);
+			demes.add(hp);
 		}
 	}
 	
@@ -137,20 +131,7 @@ public class Simulation {
 		HostPopulation hp = demes.get(d);
 		return hp.getRandomHost();
 	}
-	
-	public double getAverageRisk(Phenotype p) {
 		
-		double averageRisk = 0;
-		for (int i = 0; i < 10000; i++) {
-			Host h = getRandomHost();
-			Phenotype[] history = h.getHistory();
-			averageRisk += p.riskOfInfection(history);
-		}
-		averageRisk /= 10000.0;
-		return averageRisk;
-		
-	}
-	
 	public double getSerialInterval() {
 		double interval = 0.0;
 		if (getI()>0) {
@@ -162,53 +143,7 @@ public class Simulation {
 		}
 		return interval;	
 	}
-	
-	public void printImmunity() {
-	
-		try {
-			File immunityFile = new File("out.immunity");
-			immunityFile.delete();
-			immunityFile.createNewFile();
-			PrintStream immunityStream = new PrintStream(immunityFile);
-			
-			for (double x = VirusTree.xMin; x <= VirusTree.xMax; x += 0.5) {
-				for (double y = VirusTree.yMin; y <= VirusTree.yMax; y += 0.5) {
 				
-					Phenotype p = PhenotypeFactory.makeArbitaryPhenotype(x,y);
-					double risk = getAverageRisk(p);
-					immunityStream.printf("%.4f,", risk);
-				
-				}
-				immunityStream.println();
-			}
-			
-			immunityStream.close();
-		} catch(IOException ex) {
-			System.out.println("Could not write to file"); 
-			System.exit(0);
-		}
-	
-	}
-	
-	public void printHostPopulation() {
-	
-		try {
-			File hostFile = new File("out.hosts");
-			hostFile.delete();
-			hostFile.createNewFile();
-			PrintStream hostStream = new PrintStream(hostFile);
-			for (int i = 0; i < Parameters.demeCount; i++) {
-				HostPopulation hp = demes.get(i);
-				hp.printHostPopulation(hostStream);
-			}
-			hostStream.close();
-		} catch(IOException ex) {
-			System.out.println("Could not write to file"); 
-			System.exit(0);
-		}
-	
-	}	
-		
 	public void makeTrunk() {
 		for (int i = 0; i < Parameters.demeCount; i++) {
 			HostPopulation hp = demes.get(i);
@@ -228,7 +163,7 @@ public class Simulation {
 			System.out.println("One host population: " + noBytes);
 			Host h = hp.getRandomHostS();
 			noBytes = MemoryUtil.deepMemoryUsageOf(h);
-			System.out.println("One susceptible host with " +  h.getHistoryLength() + " previous infection: " + noBytes);
+			System.out.println("One susceptible host");
 			//h.printHistory();
 			if (getI() > 0) {
 				Virus v = getRandomInfection();
@@ -373,35 +308,12 @@ public class Simulation {
 		VirusTree.sortChildrenByDescendants();
 		VirusTree.setLayoutByDescendants();
 		VirusTree.streamline();			
-		
-		// rotation
-		if (Parameters.pcaSamples) {
-			VirusTree.rotate();
-			VirusTree.flip();
-		}
-		
+				
 		// tip and tree output
 		VirusTree.printTips();			
 		VirusTree.printBranches();	
 		VirusTree.printNewick();
-		
-		// mk output
-		VirusTree.printMK();
-		
-		// immunity output
-		if (Parameters.phenotypeSpace == "geometric") {
-			VirusTree.updateRange();
-			VirusTree.printRange();
-			if (Parameters.immunityReconstruction) {
-				printImmunity();
-			}
-		}		
-		
-		// detailed output
-		if (Parameters.detailedOutput) {
-			printHostPopulation();
-		}	
-		
+						
 	}
 	
 	public void reset() {

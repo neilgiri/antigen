@@ -21,14 +21,11 @@ public class HostPopulation {
 	
 		// basic parameters
 		deme = d;
-		int initialR = 0;
-		if (Parameters.transcendental) {
-			initialR = (int) ((double) Parameters.initialNs[deme] * Parameters.initialPrT);
-		}
+		int initialR = (int) ((double) Parameters.initialNs[deme] * Parameters.initialPrR);
 	
 		// fill population with susceptibles
 		int initialS = Parameters.initialNs[deme] - initialR;
-		if (deme == Parameters.initialDeme - 1) {
+		if (deme == 0) {
 			initialS -= Parameters.initialI;
 		}
 		for (int i = 0; i < initialS; i++) {
@@ -42,7 +39,7 @@ public class HostPopulation {
 			recovereds.add(h);
 		}		
 		
-		if (deme == Parameters.initialDeme - 1) {
+		if (deme == 0) {
 		
 			// infect some individuals
 			for (int i = 0; i < Parameters.initialI; i++) {
@@ -54,44 +51,7 @@ public class HostPopulation {
 		}
 		
 	}
-	
-	// construct checkpointed host population and infecting viruses
-	public HostPopulation(int d, boolean checkpoint) {
-	
-		if (checkpoint == true) {
 		
-			deme = d;
-		
-			try {
-    			BufferedReader in = new BufferedReader(new FileReader("out.hosts"));
-    			String line;
-    			while ((line = in.readLine()) != null) {
-    				Pattern regex = Pattern.compile(":");
-    				String[] items = regex.split(line);
-    				int thisDeme = Integer.parseInt(items[0]);
-    				String sVirus = items[1];
-    				String sHist = items[2];
-        			if (thisDeme == deme) {
-        				Host h = new Host(deme, sVirus, sHist);
-        				if (sVirus.equals("n")) {
-        					susceptibles.add(h);	
-        				}
-        				else {
-        					infecteds.add(h);
-        				}
-        			}
-    			}
-    		in.close();
-			} 
-			catch (IOException ex) {
-				System.out.println("Could not read in out.hosts"); 
-				System.exit(0);
-			}
-		
-		}
-	
-	}
-	
 	// accessors
 	public int getN() {
 		return susceptibles.size() + infecteds.size() + recovereds.size();
@@ -222,10 +182,7 @@ public class HostPopulation {
 		}
 		contact();
 		recover();
-		if (Parameters.transcendental) { 
-			loseImmunity(); 
-		}
-		mutate();
+		loseImmunity(); 
 		sample();
 	
 	}
@@ -316,16 +273,11 @@ public class HostPopulation {
 				Host sH = susceptibles.get(sndex);			
 				Virus v = iH.getInfection();
 				
-				// attempt infection
-				Phenotype p = v.getPhenotype();
-				Phenotype[] history = sH.getHistory();
-				double chanceOfSuccess = p.riskOfInfection(history);
-				if (Random.nextBoolean(chanceOfSuccess)) {
-					sH.infect(v,deme);
-					removeSusceptible(sndex);
-					infecteds.add(sH);
-					cases++;
-				}
+				// infection
+				sH.infect(v,deme);
+				removeSusceptible(sndex);
+				infecteds.add(sH);
+				cases++;
 			
 			}
 		}		
@@ -348,23 +300,18 @@ public class HostPopulation {
 				Host sH = susceptibles.get(sndex);			
 				Virus v = iH.getInfection();
 				
-				// attempt infection
-				Phenotype p = v.getPhenotype();
-				Phenotype[] history = sH.getHistory();
-				double chanceOfSuccess = p.riskOfInfection(history);
-				if (Random.nextBoolean(chanceOfSuccess)) {
-					sH.infect(v,deme);
-					removeSusceptible(sndex);
-					infecteds.add(sH);
-					cases++;
-				}
+				// infection
+				sH.infect(v,deme);
+				removeSusceptible(sndex);
+				infecteds.add(sH);
+				cases++;
 			
 			}
 		}		
 		
 	}	
 	
-	// draw a Poisson distributed number of recoveries and move from I->S based upon this
+	// draw a Poisson distributed number of recoveries and move from I->R based upon this
 	public void recover() {
 		// each infected recovers at a per-day rate of nu
 		double totalRecoveryRate = getI() * Parameters.nu;
@@ -375,12 +322,7 @@ public class HostPopulation {
 				Host h = infecteds.get(index);
 				h.clearInfection();
 				removeInfected(index);
-				if (Parameters.transcendental) {
-					recovereds.add(h);
-				} else {
-					susceptibles.add(h);
-				}
-
+				recovereds.add(h);
 			}
 		}			
 	}
@@ -399,22 +341,7 @@ public class HostPopulation {
 			}
 		}			
 	}	
-	
-	// draw a Poisson distributed number of mutations and mutate based upon this
-	// mutate should not impact other Virus's Phenotypes through reference
-	public void mutate() {
-		// each infected mutates at a per-day rate of mu
-		double totalMutationRate = getI() * Parameters.muPhenotype;
-		int mutations = Random.nextPoisson(totalMutationRate);
-		for (int i = 0; i < mutations; i++) {
-			if (getI()>0) {
-				int index = getRandomI();
-				Host h = infecteds.get(index);
-				h.mutate();
-			}
-		}			
-	}	
-	
+		
 	// draw a Poisson distributed number of samples and add them to the VirusSample
 	// only sample after burnin is completed
 	public void sample() {
@@ -509,10 +436,7 @@ public class HostPopulation {
 		infecteds.clear();
 		recovereds.clear();
 		
-		int initialR = 0;
-		if (Parameters.transcendental) {
-			initialR = (int) ((double) Parameters.initialNs[deme] * Parameters.initialPrT);
-		}
+		int initialR = (int) ((double) Parameters.initialNs[deme] * Parameters.initialPrR);
 	
 		// fill population with susceptibles
 		int initialS = Parameters.initialNs[deme] - Parameters.initialI - initialR;
@@ -527,10 +451,10 @@ public class HostPopulation {
 			recovereds.add(h);
 		}		
 		
-		if (deme == 1) {
+		if (deme == 0) {
 		
 			// infect some individuals
-			for (int i = 0; i < 3*Parameters.initialI; i++) {
+			for (int i = 0; i < Parameters.initialI; i++) {
 				Virus v = new Virus(Parameters.urVirus, deme);
 				Host h = new Host(v);
 				infecteds.add(h);
@@ -538,40 +462,6 @@ public class HostPopulation {
 		
 		}
 		
-	}
-	
-	public void printHostPopulation(PrintStream stream) {
-		
-		// step through susceptibles and print
-		for (int i = 0; i < getS(); i++) {
-			Host h = susceptibles.get(i);
-			stream.print(deme + ":");
-			h.printInfection(stream);
-			stream.print(":");
-			h.printHistory(stream);
-			stream.println();
-		}
-		
-		// step through infecteds and print
-		for (int i = 0; i < getI(); i++) {
-			Host h = infecteds.get(i);
-			stream.print(deme + ":");
-			h.printInfection(stream);
-			stream.print(":");
-			h.printHistory(stream);
-			stream.println();
-		}
-		
-		// step through recovereds and print
-		for (int i = 0; i < getR(); i++) {
-			Host h = recovereds.get(i);
-			stream.print(deme + ":");
-			h.printInfection(stream);
-			stream.print(":");
-			h.printHistory(stream);
-			stream.println();
-		}		
-	
 	}
 				
 }

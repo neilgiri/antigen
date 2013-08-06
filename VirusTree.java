@@ -9,14 +9,7 @@ public class VirusTree {
 	// fields
 	private static Virus root = Parameters.urVirus;	
 	private static List<Virus> tips = new ArrayList<Virus>();
-	
-	public static double xMin;
-	public static double xMax;
-	public static double yMin;
-	public static double yMax;
-	public static double zMin;
-	public static double zMax;	
-	
+		
 	static final Comparator<Virus> descendantOrder = new Comparator<Virus>() {
 		public int compare(Virus v1, Virus v2) {
 			Integer descendantsV1 = new Integer(getNumberOfDescendants(v1));
@@ -100,16 +93,7 @@ public class VirusTree {
 
 	// marking to by time, not proportional to prevalence
 	public static void markTips() {
-	
-//		for (Virus v : tips) {
-//			if (Random.nextBoolean(Parameters.treeProportion)) {
-//				while (v.getParent() != null) {
-//					v.mark();
-//					v = v.getParent();
-//				}
-//			}
-//		}
-		
+			
 		for (double i = 0; i < Parameters.getDate(); i+=0.1) {
 			Virus v = getRandomTipFromTo(i,i+0.1);
 			if (v != null) {
@@ -243,7 +227,6 @@ public class VirusTree {
 		}
 
 		if (vp != null && vgp != null) {
-	//		if (vp.getNumberOfChildren() == 1 && v.getPhenotype() == vp.getPhenotype() && v.isTrunk() == vp.isTrunk() && v.getDeme() == vp.getDeme()) {
 		
 			if (vp.getNumberOfChildren() == 1) {
 		
@@ -281,263 +264,7 @@ public class VirusTree {
 		}
 		
 	}
-	
-	// rotate the 2d euclidean space using PCA, returning an x-axis with maximum variance
-	public static void rotate() {
-	
-		if (Parameters.phenotypeSpace == "geometric") {
-			
-			// load a 2d array with phenotypes
-			
-			List<Virus> virusList = postOrderNodes();
-			int n = virusList.size();
-			int m = 2;
-			
-			double[][] input = new double[n][m];
-			
-			for (int i = 0; i < n; i++) {
-				Virus v = virusList.get(i);
-				GeometricPhenotype p = (GeometricPhenotype) v.getPhenotype();
-				double x = p.getTraitA();
-				double y = p.getTraitB();	
-				input[i][0] = x;
-				input[i][1] = y;				
-			}
-			
-			// project this array
-			
-			double[][] projected = SimplePCA.project(input);
-			
-			// reset phenotypes based on projection
-			
-			for (int i = 0; i < n; i++) {
-				Virus v = virusList.get(i);
-				GeometricPhenotype p = (GeometricPhenotype) v.getPhenotype();
-				double x = projected[i][0];
-				double y = projected[i][1];				
-				p.setTraitA(x);
-				p.setTraitB(y);					
-			}
-
-		}	
 		
-		if (Parameters.phenotypeSpace == "geometric3d") {
-			
-			// load a 2d array with phenotypes
-			
-			List<Virus> virusList = postOrderNodes();
-			int n = virusList.size();
-			int m = 3;
-			
-			double[][] input = new double[n][m];
-			
-			for (int i = 0; i < n; i++) {
-				Virus v = virusList.get(i);
-				GeometricPhenotype3D p = (GeometricPhenotype3D) v.getPhenotype();
-				double x = p.getTraitA();
-				double y = p.getTraitB();	
-				double z = p.getTraitC();	
-				input[i][0] = x;
-				input[i][1] = y;		
-				input[i][2] = z;
-			}
-			
-			// project this array
-			
-			double[][] projected = SimplePCA.project3D(input);
-			
-			// reset phenotypes based on projection
-			
-			for (int i = 0; i < n; i++) {
-				Virus v = virusList.get(i);
-				GeometricPhenotype3D p = (GeometricPhenotype3D) v.getPhenotype();
-				double x = projected[i][0];
-				double y = projected[i][1];	
-				double z = projected[i][2];	
-				p.setTraitA(x);
-				p.setTraitB(y);	
-				p.setTraitC(z);	
-			}
-
-		}			
-	
-	}
-	
-	// flips the 2d euclidean space so that first sample is always to the left of the last sample
-	public static void flip() {
-	
-		if (Parameters.phenotypeSpace == "geometric") {
-
-			List<Virus> virusList = postOrderNodes();
-			int n = virusList.size();	
-			
-			// find first and last virus			
-			Virus firstVirus = virusList.get(0);
-			Virus lastVirus = virusList.get(0);
-			double firstDate = firstVirus.getBirth();
-			double lastDate = lastVirus.getBirth();
-					
-			for (Virus v : virusList) {
-				if (v.getBirth() < firstDate) {
-					firstDate = v.getBirth();
-					firstVirus = v;
-				}
-				if (v.getBirth() > lastDate) {
-					lastDate = v.getBirth();
-					lastVirus = v;
-				}				
-			}
-			
-			// is the x-value of first virus greater than the x-value of last virus?
-			// if so, flip
-			
-			GeometricPhenotype p = (GeometricPhenotype) firstVirus.getPhenotype();
-			double firstX = p.getTraitA();
-			p = (GeometricPhenotype) lastVirus.getPhenotype();
-			double lastX = p.getTraitA();		
-			
-			if (firstX > lastX) {
-			
-				// I think that postOrderNodes() has replicates in it, need to go through some hoops because of this
-				double[] input = new double[n];
-			
-				for (int i = 0; i < n; i++) {
-					Virus v = virusList.get(i);
-					p = (GeometricPhenotype) v.getPhenotype();		
-					input[i] = p.getTraitA();;
-				}
-				
-				for (int i = 0; i < n; i++) {
-					Virus v = virusList.get(i);
-					p = (GeometricPhenotype) v.getPhenotype();
-					double x = -1*input[i];		
-					p.setTraitA(x);
-				}				
-			
-			}
-			
-		}
-		
-		if (Parameters.phenotypeSpace == "geometric3d") {
-
-			List<Virus> virusList = postOrderNodes();
-			int n = virusList.size();	
-			
-			// find first and last virus			
-			Virus firstVirus = virusList.get(0);
-			Virus lastVirus = virusList.get(0);
-			double firstDate = firstVirus.getBirth();
-			double lastDate = lastVirus.getBirth();
-					
-			for (Virus v : virusList) {
-				if (v.getBirth() < firstDate) {
-					firstDate = v.getBirth();
-					firstVirus = v;
-				}
-				if (v.getBirth() > lastDate) {
-					lastDate = v.getBirth();
-					lastVirus = v;
-				}				
-			}
-			
-			// is the x-value of first virus greater than the x-value of last virus?
-			// if so, flip
-			
-			GeometricPhenotype3D p = (GeometricPhenotype3D) firstVirus.getPhenotype();
-			double firstX = p.getTraitA();
-			p = (GeometricPhenotype3D) lastVirus.getPhenotype();
-			double lastX = p.getTraitA();		
-			
-			if (firstX > lastX) {
-			
-				// I think that postOrderNodes() has replicates in it, need to go through some hoops because of this
-				double[] input = new double[n];
-			
-				for (int i = 0; i < n; i++) {
-					Virus v = virusList.get(i);
-					p = (GeometricPhenotype3D) v.getPhenotype();		
-					input[i] = p.getTraitA();;
-				}
-				
-				for (int i = 0; i < n; i++) {
-					Virus v = virusList.get(i);
-					p = (GeometricPhenotype3D) v.getPhenotype();
-					double x = -1*input[i];		
-					p.setTraitA(x);
-				}				
-			
-			}
-			
-		}		
-	
-	}
-	
-	// walks through list of nodes and update min and max ranges appropriately
-	public static void updateRange() {
-	
-		xMin = 0.0;
-		xMax = 0.0;
-		yMin = 0.0;
-		yMax = 0.0;
-		zMin = 0.0;
-		zMax = 0.0;		
-	
-		if (Parameters.phenotypeSpace == "geometric") {
-			for (Virus v : postOrderNodes()) {
-			
-				GeometricPhenotype p = (GeometricPhenotype) v.getPhenotype();
-				double x = p.getTraitA();
-				double y = p.getTraitB();
-				if (xMin > x) { xMin = x; }
-				if (xMax < x) { xMax = x; }
-				if (yMin > y) { yMin = y; }
-				if (yMax < y) { yMax = y; }	
-			
-			}
-		}
-		
-		if (Parameters.phenotypeSpace == "geometric3d") {
-			for (Virus v : postOrderNodes()) {
-			
-				GeometricPhenotype3D p = (GeometricPhenotype3D) v.getPhenotype();
-				double x = p.getTraitA();
-				double y = p.getTraitB();
-				double z = p.getTraitC();				
-				if (xMin > x) { xMin = x; }
-				if (xMax < x) { xMax = x; }
-				if (yMin > y) { yMin = y; }
-				if (yMax < y) { yMax = y; }	
-				if (zMin > z) { zMin = z; }
-				if (zMax < z) { zMax = z; }					
-			
-			}
-		}		
-		
-		xMin = Math.floor(xMin) - 10;
-		xMax = Math.ceil(xMax) + 10;
-		yMin = Math.floor(yMin) - 10;
-		yMax = Math.ceil(yMax) + 10;
-		zMin = Math.floor(zMin) - 10;
-		zMax = Math.ceil(zMax) + 10;		
-	
-	}
-
-	public static void printRange() {
-		
-		try {
-			File rangeFile = new File("out.range");
-			rangeFile.delete();
-			rangeFile.createNewFile();
-			PrintStream rangeStream = new PrintStream(rangeFile);
-			rangeStream.printf("%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n", xMin, xMax, yMin, yMax, zMin, zMax);
-			rangeStream.close();
-		} catch(IOException ex) {
-			System.out.println("Could not write to file"); 
-			System.exit(0);
-		}
-		
-	}
-	
 	public static void printTips() {
 		
 		try {
@@ -545,10 +272,10 @@ public class VirusTree {
 			tipFile.delete();
 			tipFile.createNewFile();
 			PrintStream tipStream = new PrintStream(tipFile);
-			tipStream.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", "name", "year", "trunk", "tip", "mark", "location", "layout", "ag1", "ag2");
+			tipStream.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", "name", "year", "trunk", "tip", "mark", "location", "layout");
 			for (int i = 0; i < tips.size(); i++) {
 				Virus v = tips.get(i);			
-				tipStream.printf("\"%s\",%.4f,%d,%d,%d,%d,%.4f,%s\n", v, v.getBirth(), v.isTrunk()?1:0, v.isTip()?1:0, v.isMarked()?1:0, v.getDeme(), v.getLayout(), v.getPhenotype());
+				tipStream.printf("\"%s\",%.4f,%d,%d,%d,%d,%.4f\n", v, v.getBirth(), v.isTrunk()?1:0, v.isTip()?1:0, v.isMarked()?1:0, v.getDeme(), v.getLayout());
 			}
 			tipStream.close();
 		} catch(IOException ex) {
@@ -568,8 +295,8 @@ public class VirusTree {
 			for (Virus v : postOrderNodes()) {
 				if (v.getParent() != null) {
 					Virus vp = v.getParent();
-					branchStream.printf("{\"%s\",%.4f,%d,%d,%d,%d,%.4f,%s}\t", v, v.getBirth(), v.isTrunk()?1:0, v.isTip()?1:0, v.isMarked()?1:0, v.getDeme(), v.getLayout(), v.getPhenotype());
-					branchStream.printf("{\"%s\",%.4f,%d,%d,%d,%d,%.4f,%s}\t", vp, vp.getBirth(), vp.isTrunk()?1:0, vp.isTip()?1:0, v.isMarked()?1:0, vp.getDeme(), vp.getLayout(), vp.getPhenotype());
+					branchStream.printf("{\"%s\",%.4f,%d,%d,%d,%d,%.4f}\t", v, v.getBirth(), v.isTrunk()?1:0, v.isTip()?1:0, v.isMarked()?1:0, v.getDeme(), v.getLayout());
+					branchStream.printf("{\"%s\",%.4f,%d,%d,%d,%d,%.4f}\t", vp, vp.getBirth(), vp.isTrunk()?1:0, vp.isTip()?1:0, v.isMarked()?1:0, vp.getDeme(), vp.getLayout());
 					branchStream.printf("%d\n", vp.getCoverage());
 				}
 			}
@@ -633,8 +360,6 @@ public class VirusTree {
 		// find height, walk back until a parent with a split occurs
 		if (printHeight && v.getParent() != null) {
 
-			treeStream.printf("[&antigenic={%s}]", v.getPhenotype() );
-		
 			Virus vp = v.getParent();
 			while (vp.getNumberOfChildren() == 1 && vp.getParent() != null) {
 				vp = vp.getParent();
@@ -677,81 +402,5 @@ public class VirusTree {
 		}
 	
 	}
-	
-	public static int sideBranchMutations() {
-		int count = 0;
-		for (Virus v : postOrderNodes()) {
-			if (v.getParent() != null && v.getBirth() < Parameters.getDate() - Parameters.yearsFromMK) {
-				Virus vp = v.getParent();
-				if (!v.isTrunk() && !vp.isTrunk() && v.getPhenotype() != vp.getPhenotype()) {
-					count++;
-				}
-			}
-		}
-		return count;
-	}	
-	
-	public static double sideBranchOpportunity() {
-		double time = 0;
-		for (Virus v : postOrderNodes()) {
-			if (v.getParent() != null && v.getBirth() < Parameters.getDate() - Parameters.yearsFromMK) {
-				Virus vp = v.getParent();
-				if (!v.isTrunk() && !vp.isTrunk()) {
-					time += v.getBirth() - vp.getBirth();
-				}
-			}
-		}
-		return time;
-	}	
-	
-	public static int trunkMutations() {
-		int count = 0;
-		for (Virus v : postOrderNodes()) {
-			if (v.getParent() != null && v.getBirth() < Parameters.getDate() - Parameters.yearsFromMK) {
-				Virus vp = v.getParent();
-				if (v.isTrunk() && vp.isTrunk() && v.getPhenotype() != vp.getPhenotype()) {
-					count++;
-				}
-			}
-		}
-		return count;
-	}	
-	
-	public static double trunkOpportunity() {
-		double time = 0;
-		for (Virus v : postOrderNodes()) {
-			if (v.getParent() != null && v.getBirth() < Parameters.getDate() - Parameters.yearsFromMK) {
-				Virus vp = v.getParent();
-				if (v.isTrunk() && vp.isTrunk()) {
-					time += v.getBirth() - vp.getBirth();
-				}
-			}
-		}
-		return time;
-	}		
-	
-	public static void printMK() {
-		
-		try {
-			File mkFile = new File("out.mk");
-			mkFile.delete();
-			mkFile.createNewFile();
-			PrintStream mkStream = new PrintStream(mkFile);
-			mkStream.printf("sideBranchMut\tsideBranchOpp\tsideBranchRate\ttrunkMut\ttrunkOpp\ttrunkRate\tmk\n");
-			int sideBranchMut = sideBranchMutations();
-			double sideBranchOpp = sideBranchOpportunity();
-			double sideBranchRate = sideBranchMut / sideBranchOpp;
-			int trunkMut = trunkMutations();
-			double trunkOpp = trunkOpportunity();	
-			double trunkRate = trunkMut / trunkOpp;		
-			double mk = trunkRate / sideBranchRate;
-			mkStream.printf("%d,%.4f,%.4f,%d,%.4f,%.4f,%.4f\n", sideBranchMut, sideBranchOpp, sideBranchRate, trunkMut, trunkOpp, trunkRate, mk);
-			mkStream.close();
-		} catch(IOException ex) {
-			System.out.println("Could not write to file"); 
-			System.exit(0);
-		}
-		
-	}	
 		
 }
