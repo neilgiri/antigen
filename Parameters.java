@@ -39,7 +39,7 @@ public class Parameters {
 	public static final double initialPrR = 0.0; 					// as proportion of population
 	public static final double beta = 0.3; 							// in contacts per individual per day
 	public static final double nu = 0.2; 							// in recoveries per individual per day
-	public static final double immunityLoss = 0.5;					// in R->S per individual per day
+	public static final double immunityLoss = 0.0027;				// in R->S per individual per day
 	public static final double betweenDemePro = 0.0005;				// relative to within-deme beta		
 	
 	// seasonal betas

@@ -1,9 +1,9 @@
-*This project is forked from [antigen](https://github.com/trvrb/antigen). Here, I wanted a simple
-SIRS model, so I stripped out all the stuff about virus phenotypes. This should run significantly
-faster than Antigen.*
+*This is a streamlined branch, where I wanted a simple SIRS model with all the stuff about virus
+phenotypes stripped out. This should run significantly faster than Antigen.*
 
-**Epidemic** implements an SIRS epidemiological model, where hosts make contacts trasmitting infection
-and also recover from infection.  During the simulation, the genealogy of infection is tracked.
+**Epidemic** implements an SIRS epidemiological model, where hosts make contacts trasmitting
+infection and also recover from infection.  During the simulation, the genealogy of infection is
+tracked.
 
 Population structure is implemented in terms of discrete demes.  Contacts within a deme occur
 through standard mass action, while contacts between demes occur at some fraction of the rate of
